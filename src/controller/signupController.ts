@@ -9,7 +9,7 @@ export const sendOtp = async (req: Request, res: Response) => {
   await otpService.saveOtp(email, otp);
 
   const token = jwt.sign({ email }, process.env.JWT_SECRET as string, {
-    expiresIn: "1h",
+    expiresIn: "15m",
   });
   res.json({ token });
 };
