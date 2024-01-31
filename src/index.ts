@@ -10,4 +10,4 @@ connectDB();
 app.use("/api", apiRoutes);
 
 const PORT = process.env.PORT || 7001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server is running on PORT ${PORT}`));

@@ -28,7 +28,7 @@ const otpService: IOtpService = {
     });
 
     const mailOptions = {
-      from: "thecoder780@gmail.com",
+      from: process.env.email,
       to: email,
       subject: "Your OTP",
       text: `Your OTP is ${otp}`,
@@ -38,16 +38,30 @@ const otpService: IOtpService = {
   },
 
   saveOtp: async (email, otp) => {
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 5);
-    const newOtp = new Otp({ email, otp, expiresAt });
-    return newOtp.save();
+    const existingOtp = await Otp.findOne({ email });
+    if (existingOtp) {
+      existingOtp.otp = otp;
+      existingOtp.expiresAt = new Date();
+      existingOtp.expiresAt.setMinutes(existingOtp.expiresAt.getMinutes() + 5);
+      await existingOtp.save();
+      return existingOtp;
+    } else {
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 5);
+      const newOtp = new Otp({ email, otp, expiresAt });
+      return newOtp.save();
+    }
   },
 
-  verifyOtp: async (email, otp) => {
-    const otpRecord = await Otp.findOne({ email, otp });
+  verifyOtp: async (email, password) => {
+    const otpRecord = await Otp.findOne({ email });
     if (!otpRecord || otpRecord.expiresAt < new Date()) {
       otpRecord && (await Otp.deleteOne({ _id: otpRecord._id }));
+      return false;
+    }
+
+    // Check if the provided password matches the stored OTP
+    if (otpRecord.otp !== password) {
       return false;
     }
 
